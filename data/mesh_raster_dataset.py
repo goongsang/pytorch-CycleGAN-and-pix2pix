@@ -12,9 +12,9 @@ import shutil
 class ObjToRaster:
     def __init__(self, objPath, res, device=None):
         self.res = res
+        self.device = "cuda:0" if device is None else device
         self.glctx = dr.RasterizeGLContext()
         self.load(objPath)
-        self.device = "cuda:0" if device is None else device
         
     def load(self, objPath):
         self.obj = libObj(objPath)
@@ -120,10 +120,8 @@ class MeshRasterDataset(BaseDataset):
             A_paths (str) - - image paths
             B_paths (str) - - image paths (same as A_paths)
         """
-        A = self.rasterizer.rasterize(self.pntsA[index])[0]
-        B = self.rasterizer.rasterize(self.pntsB[index])[0]
-        A = torch.tensor(A).permute(2,0,1)
-        B = torch.tensor(B).permute(2,0,1)
+        A = self.rasterizer.rasterize(self.pntsA[index])[0].permute(2,0,1).detach()
+        B = self.rasterizer.rasterize(self.pntsB[index])[0].permute(2,0,1).detach()
         AB_path = 'raster_idx_%06d' % index
 
         return {'A': A, 'B': B, 'A_paths': AB_path, 'B_paths': AB_path}
