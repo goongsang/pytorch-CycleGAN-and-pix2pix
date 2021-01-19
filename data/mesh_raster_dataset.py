@@ -1,4 +1,5 @@
 import os.path
+from data.base_dataset import BaseDataset
 import numpy as np
 import torch
 import torch.nn.functional as F
@@ -9,7 +10,7 @@ import json
 import shutil
 
 class ObjToRaster:
-    def __init__(self, objPath, res=256, device=None):
+    def __init__(self, objPath, res, device=None):
         self.res = res
         self.glctx = dr.RasterizeGLContext()
         self.load(objPath)
@@ -79,7 +80,7 @@ class ObjToRaster:
 # if nValidFrames > 0:
 #     np.save(outdir+"valid/input.npy", inFrames[validFrames])
 #     np.save(outdir+"valid/output.npy", outFrames[validFrames])
-# shutil.copyfile("F:/nvidia/stylegan3d/data/mark_deepfacs/neutral_tri.obj", outdir+"neutrl_tri.obj")
+# shutil.copyfile("F:/nvidia/stylegan3d/data/mark_deepfacs/neutral_tri.obj", outdir+"neutral_tri.obj")
 
 class MeshRasterDataset(BaseDataset):
     """A dataset class for paired image dataset. Images are rasterized on-the-fly from mesh data. 
@@ -95,8 +96,10 @@ class MeshRasterDataset(BaseDataset):
             opt (Option class) -- stores all the experiment flags; needs to be a subclass of BaseOptions
         """
         BaseDataset.__init__(self, opt)
+        res = int(opt.netG.split("_")[1])
+        print("netG res", res)
         self.dir_AB = os.path.join(opt.dataroot, opt.phase)  # get the data directory
-        self.rasterizer = ObjToRaster(os.path.join(opt.dataroot, "neutral_tri.obj"), opt.res)
+        self.rasterizer = ObjToRaster(os.path.join(opt.dataroot, "neutral_tri.obj"), res)
         print("Loading pntsA")
         self.pntsA = np.load(os.path.join(self.dir_AB, "input.npy"))
         print("Loading pntsB")
